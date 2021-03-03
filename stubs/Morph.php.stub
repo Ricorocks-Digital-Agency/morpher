@@ -1,0 +1,13 @@
+<?php
+
+use RicorocksDigitalAgency\Morpher\Morph;
+
+class :CLASS_NAME: extends Morph
+{
+    // protected static $migration = YourMigration::class
+
+    public function run()
+    {
+        // It's all yours...
+    }
+}
