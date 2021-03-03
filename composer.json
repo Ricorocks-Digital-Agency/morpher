@@ -1,5 +1,5 @@
 {
-    "name": "ricorocks-digital-agency/voyager",
+    "name": "ricorocks-digital-agency/morpher",
     "description": "A Laravel package for managing data changes during database migrations.",
     "type": "library",
     "require": {
@@ -18,7 +18,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "RicorocksDigitalAgency\\Morpher\\Tests\\": "tests/",
+            "RicorocksDigitalAgency\\Morpher\\Tests\\": "tests/"
         }
     },
     "license": "MIT",

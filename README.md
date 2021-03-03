@@ -6,6 +6,10 @@ appropriate location.
 
 ## Installation
 
+```bash
+composer require ricorocks-digital-agency/morpher
+```
+
 You'll just need out config file to get started:
 
 ```bash
