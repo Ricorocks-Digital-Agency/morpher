@@ -27,5 +27,12 @@
             "name": "luke",
             "email": "lukeraymonddowning@gmail.com"
         }
-    ]
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "RicorocksDigitalAgency\\Morpher\\Providers\\MorpherServiceProvider"
+            ]
+        }
+    }
 }
