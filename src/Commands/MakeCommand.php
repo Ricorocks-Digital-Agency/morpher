@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\File;
 class MakeCommand extends Command
 {
 
-    protected $name = "morpher:make {class}";
+    protected $name = "make:morph {class}";
     protected $description = "Makes a new Morph class";
 
     public function handle()

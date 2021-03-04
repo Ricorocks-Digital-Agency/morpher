@@ -46,7 +46,7 @@ So, how do we go about taking all of the existing names, preparing the data, and
 Let's start by creating out first Morph:
 
 ```bash
-php artisan morph:create SplitUserNames
+php artisan make:morph SplitUserNames
 ```
 
 This will create a new class in `app/Morphs` called `SplitUserNames`. Our next step is to link our migration to our
