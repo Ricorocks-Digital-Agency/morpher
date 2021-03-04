@@ -17,9 +17,9 @@ class MakeCommand extends Command
     public function handle()
     {
         $stub = file_get_contents(__DIR__ . '/../../stubs/Morph.php.stub');
-        $class = str_replace(":CLASS_NAME:", $this->option('class'), $stub);
+        $class = str_replace(":CLASS_NAME:", $this->argument('class'), $stub);
 
-        File::put(database_path('morphs/' . $this->option('class')), $class);
+        File::put(database_path('morphs/' . $this->argument('class')), $class);
     }
 
 }
