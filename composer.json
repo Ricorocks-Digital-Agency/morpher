@@ -32,7 +32,10 @@
         "laravel": {
             "providers": [
                 "RicorocksDigitalAgency\\Morpher\\Providers\\MorpherServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "Morph": "RicorocksDigitalAgency\\Morpher\\Facades\\Morph"
+            }
         }
     }
 }

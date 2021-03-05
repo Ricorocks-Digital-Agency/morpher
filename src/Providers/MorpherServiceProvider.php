@@ -4,6 +4,7 @@ namespace RicorocksDigitalAgency\Morpher\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use RicorocksDigitalAgency\Morpher\Commands\MakeCommand;
+use RicorocksDigitalAgency\Morpher\Facades\Morph;
 use RicorocksDigitalAgency\Morpher\Morpher;
 
 class MorpherServiceProvider extends ServiceProvider
@@ -25,7 +26,7 @@ class MorpherServiceProvider extends ServiceProvider
     protected function console()
     {
         $this->commands(MakeCommand::class);
-        app('morpher')->setup();
+        Morph::setup();
         $this->publishes([__DIR__ . '/../../config/morpher.php' => config_path('morpher.php')], 'morpher');
     }
 }

@@ -12,6 +12,12 @@ class Morpher
 {
     protected $allMorphs;
     protected $morphs = [];
+    protected $inspections = [];
+
+    public function test(string $morph)
+    {
+        return tap(new Inspection(), fn($inspection) => $this->inspections[$morph][] = $inspection);
+    }
 
     public function setup()
     {
@@ -73,8 +79,15 @@ class Morpher
 
         DB::transaction(
             fn() => $this->getMorphs($event->migration)
-                ->filter(fn($morphs) => $morphs->canRun())
-                ->each(fn($morphs) => $morphs->run($event))
+                ->filter(fn($morph) => $morph->canRun())
+                ->each(
+                    function ($morph) use ($event) {
+                        $inspections = collect(data_get($this->inspections, get_class($morph)));
+                        $inspections->each?->runBefore($morph);
+                        $morph->run($event);
+                        $inspections->each?->runAfter($morph);
+                    }
+                )
         );
     }
 }
