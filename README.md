@@ -10,7 +10,7 @@ appropriate location.
 composer require ricorocks-digital-agency/morpher
 ```
 
-You'll just need out config file to get started:
+It's not required, but you might want to publish the config file:
 
 ```bash
 php artisan vendor:publish --tag=morpher
