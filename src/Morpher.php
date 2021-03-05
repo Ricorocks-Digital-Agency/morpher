@@ -4,6 +4,7 @@ namespace RicorocksDigitalAgency\Morpher;
 
 use Illuminate\Database\Events\MigrationEnded;
 use Illuminate\Database\Events\MigrationStarted;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 
@@ -14,6 +15,10 @@ class Morpher
 
     public function setup()
     {
+        if (!config('morpher.enabled')) {
+            return;
+        }
+
         Event::listen(MigrationStarted::class, fn($event) => $this->prepareMorphs($event));
         Event::listen(MigrationEnded::class, fn($event) => $this->runMorphs($event));
     }
@@ -66,8 +71,10 @@ class Morpher
             return;
         }
 
-        $this->getMorphs($event->migration)
-            ->filter(fn($morphs) => $morphs->canRun())
-            ->each(fn($morphs) => $morphs->run($event));
+        DB::transaction(
+            fn() => $this->getMorphs($event->migration)
+                ->filter(fn($morphs) => $morphs->canRun())
+                ->each(fn($morphs) => $morphs->run($event))
+        );
     }
 }

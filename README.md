@@ -49,16 +49,14 @@ Let's start by creating out first Morph:
 php artisan make:morph SplitUserNames
 ```
 
-This will create a new class in `app/Morphs` called `SplitUserNames`. Our next step is to link our migration to our
-new Morph. In the `morpher.php` config file, you can add the link like so:
+This will create a new class in `database/morphs` called `SplitUserNames`. Our next step is to link our migration to our
+new Morph. We can do this using the `$migration` property in the morph class:
 
 ```php
-'morphs' => [
-    SplitNamesOnUsersTable::class => SplitUserNames::class
-]
+protected static $migration = SplitNamesOnUsersTable::class;
 ```
 
-The key is the class name of the migration, and the value is a Morph class name or array of Morph class names.
+If you need more complex logic, you can instead override the `migration` method and return a migration class name that way.
 
 Our next task is to describe our Morph. In the `app/Morphs/SplitUserNames` class, we need to do the following:
 
@@ -71,6 +69,7 @@ To accomplish this, our `Morph` might look as follows:
 ```php
 class SplitUserNames extends Morph
 {
+    protected static $migration = SplitNamesOnUsersTable::class;
     protected $newNames;
     
     public function prepare()
@@ -98,8 +97,7 @@ class SplitUserNames extends Morph
 }
 ```
 
-Because we linked this `Morph` to our migration in the config file, it will be run automatically for us when we 
-execute `php artisan migrate`.
+Now, when we run `php artisan migrate`, this Morph will run automatically.
 
 ## Lifecycle
 
@@ -113,9 +111,20 @@ the following happens (in order):
 3. The `canRun` method will be called on the `Morph` class. Returning false in this method will stop the process here.
 4. The `run` method will be called on the `Morph` class. This is where you should perform your data transformations.
 
+## Disabling Morphs
+
+It may be helpful, particularly in local development where you destroy and rebuild the database regularly, to disable
+Morphs from running. To do this, add the following to your environment file:
+
+```dotenv
+RUN_MORPHS=false
+```
+
 ## Notes and Considerations
 
+* Everything in the `run` method is encapsulated in a database transaction. This means that if there is an exception 
+  whilst running your morph, no data changes will be persisted.
 * Its important to remember that this package isn't magic. If you do something stupid to the data in your database, there
-is no going back. So back up your data before migrating.
+  is no going back. **Back up your data before migrating.**
 * You can override the `canRun` method to stop a faulty data set ruining your database. Perform any checks you want in this
-method, and just return a boolean to tell us if we should go ahead.
+  method, and just return a boolean to tell us if we should go ahead.

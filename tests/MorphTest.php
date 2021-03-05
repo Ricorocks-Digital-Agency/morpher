@@ -2,28 +2,18 @@
 
 namespace RicorocksDigitalAgency\Morpher\Tests;
 
-use App\Morphs\ExampleMorph;
 use CreateAnotherExampleTable;
 use CreateExampleTable;
-use Exception;
 use Illuminate\Database\Events\MigrationEnded;
 use Illuminate\Database\Events\MigrationStarted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
-use RicorocksDigitalAgency\Morpher\Morph;
 
 class MorphTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        include_once __DIR__ . '/examples/migrations/0000_00_00_000001_create_example_table.php';
-        include_once __DIR__ . '/examples/migrations/0000_00_01_000000_create_another_example_table.php';
-    }
 
     /** @test */
     public function it_runs_the_voyage_when_the_migration_has_completed()
@@ -61,17 +51,5 @@ class MorphTest extends TestCase
 
         expect(DB::table('other_examples')->find(1)->name)->toEqual('Bob');
         expect(DB::table('other_examples')->find(2)->name)->toEqual('Barry');
-    }
-
-    protected function getEnvironmentSetUp($app)
-    {
-        parent::getEnvironmentSetUp($app);
-
-        $app['config']->set(
-            'morpher.paths',
-            [
-                __DIR__ . '/examples/Morphs'
-            ]
-        );
     }
 }
