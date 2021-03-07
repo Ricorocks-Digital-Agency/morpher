@@ -2,17 +2,20 @@
 
 namespace RicorocksDigitalAgency\Morpher;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Database\Events\MigrationEnded;
 use Illuminate\Database\Events\MigrationStarted;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\File;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 class Morpher
 {
     protected $allMorphs;
     protected $morphs = [];
     protected $inspections = [];
+    protected $console;
 
     public function test(string $morph)
     {
@@ -27,6 +30,7 @@ class Morpher
 
         Event::listen(MigrationStarted::class, fn($event) => $this->prepareMorphs($event));
         Event::listen(MigrationEnded::class, fn($event) => $this->runMorphs($event));
+        Event::listen(CommandStarting::class, fn($event) => $this->console = $event->output);
     }
 
     protected function prepareMorphs($event)
@@ -35,7 +39,9 @@ class Morpher
             return;
         }
 
-        $this->getMorphs($event->migration)->each(fn($morphs) => $morphs->prepare());
+        $this->getMorphs($event->migration)
+            ->each(fn($morph) => $morph->withConsole($this->console ?? new ConsoleOutput))
+            ->each(fn($morph) => $morph->prepare());
     }
 
     protected function isBuildingDatabase($event)

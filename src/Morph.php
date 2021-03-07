@@ -2,9 +2,17 @@
 
 namespace RicorocksDigitalAgency\Morpher;
 
+use Symfony\Component\Console\Output\OutputInterface;
+
 abstract class Morph
 {
     protected static $migration;
+    protected OutputInterface $console;
+
+    public function withConsole(OutputInterface $console)
+    {
+        $this->console = $console;
+    }
 
     public function prepare()
     {
