@@ -58,6 +58,9 @@ protected static $migration = SplitNamesOnUsersTable::class;
 
 If you need more complex logic, you can instead override the `migration` method and return a migration class name that way.
 
+> :zap: Working with anonymous migrations? You can instead use the filename of the migration as
+> the value of the `$migration` property. For example: `protected static $migration = "2021_05_01_000000_create_some_anonymous_table";
+
 Our next task is to describe our Morph. In the `app/Morphs/SplitUserNames` class, we need to do the following:
 
 1. Retrieve the current names prior to the migration being run.
