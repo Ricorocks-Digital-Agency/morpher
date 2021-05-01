@@ -4,6 +4,14 @@ Morpher is a small Laravel package that provides a unified pattern of transformi
 It allows you to keep your migration logic clean and terse and move responsibility for data manipulation to a more
 appropriate location.
 
+## TOC
+- [Installation](#installation)
+- [Usage Guide](#create-your-first-morph)
+- [Lifecycle of a Morph](#lifecycle)
+- [Testing Morphs](#testing-morphs)
+- [Disabling Morphs](#disabling-morphs)
+- [Notes and Considerations](#notes-and-considerations)
+
 ## Installation
 
 ```bash
@@ -203,7 +211,9 @@ RUN_MORPHS=false
 
 * Everything in the `run` method is encapsulated in a database transaction. This means that if there is an exception 
   whilst running your morph, no data changes will be persisted.
-* Its important to remember that this package isn't magic. If you do something stupid to the data in your database, there
+* It's important to remember that this package isn't magic. If you do something stupid to the data in your database, there
   is no going back. **Back up your data before migrating.**
 * You can override the `canRun` method to stop a faulty data set ruining your database. Perform any checks you want in this
   method, and just return a boolean to tell us if we should go ahead.
+* Want to write your progress to the console during a Morph? You can do so using the `$this->console` property on
+  the Morph class!
