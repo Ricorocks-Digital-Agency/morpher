@@ -111,6 +111,82 @@ the following happens (in order):
 3. The `canRun` method will be called on the `Morph` class. Returning false in this method will stop the process here.
 4. The `run` method will be called on the `Morph` class. This is where you should perform your data transformations.
 
+## Testing Morphs
+
+One of the biggest challenges presented by data morphing is writing feature tests. It becomes very tricky to insert
+data to test on prior to the morph taking place. And yet, automated tests are so important when the code you're running
+will be modifying real data. Morpher makes the process of testing data a breeze so that you no longer have to compromise.
+
+To get started, we recommend creating a separate test case (or more than one test case) per Morph you'd like to write
+tests for. Add the `TestsMorphs` trait to that test class, and add the `supportMorphs` call to end of the `setUp` 
+method.
+
+```php
+use RicorocksDigitalAgency\Morpher\Support\TestsMorphs;
+
+class UserMorphTest extends TestCase {
+
+    use TestsMorphs;
+    
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->supportMorphs();
+    }
+
+}
+```
+
+> :warning: The `TestsMorphs` trait conflicts with other database traits, such as `RefreshDatabase` or `DatabaseTransactions`.
+> As such, ensure that your morph test cases are isolated (in separate test classes) from other tests in your suite.
+
+With that done, you can get to work writing your tests! In order to do this, we provide a robust inspection API to 
+facilitate Morph tests.
+
+```php
+use RicorocksDigitalAgency\Morpher\Facades\Morpher;
+
+class UserMorphTest extends TestCase {
+
+    // ...After setup
+    
+    public function test_it_translates_the_user_names_correctly() {
+        Morpher::test(UserMorph::class)
+            ->beforeMigrating(function() {
+                /**
+                 * We use the `beforeMigrating` hook to allow for "old"
+                 * data creation. In our user names example, we'll
+                 * create users with combined forename and surname.  
+                 */
+                 DB::table('users')->insert([['name' => 'Joe Bloggs'], ['name' => 'Luke Downing']]);
+            })
+            ->before(function() {
+                /**
+                 * We use the `before` hook to perform any expectations 
+                 * after the migration has run but before the Morph
+                 * has been executed.
+                 */
+                 $this->assertCount(2, User::all());
+            })
+            ->after(function() {
+                /**
+                 * We use the `after` hook to perform any expectations 
+                 * after the morph has finished running. For example,
+                 * we would expect data to have been transformed. 
+                 */
+                 [$joe, $luke] = User::all();
+                 
+                 $this->assertEquals("Joe", $joe->forename);
+                 $this->assertEquals("Bloggs", $joe->surname);
+                 
+                 $this->assertEquals("Luke", $luke->forename);
+                 $this->assertEquals("Downing", $luke->surname);
+            });
+    }
+
+}
+```
+
 ## Disabling Morphs
 
 It may be helpful, particularly in local development where you destroy and rebuild the database regularly, to disable

@@ -8,14 +8,35 @@ use CreateExampleTable;
 use ExampleMorph;
 use Illuminate\Database\Events\MigrationEnded;
 use Illuminate\Database\Events\MigrationEvent;
+use Illuminate\Database\Events\MigrationStarted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Schema;
 use RicorocksDigitalAgency\Morpher\Facades\Morpher;
 
 class MorphInspectionTest extends TestCase
 {
     use RefreshDatabase;
+
+    /** @test */
+    public function it_can_run_an_inspection_prior_to_running_the_migration()
+    {
+        Morpher::test(ExampleMorph::class)
+            ->beforeMigrating(function() {
+                expect(Schema::hasTable('examples'))->toBeFalse();
+            })
+            ->before(function() {
+                DB::table('examples')->insert([['name' => 'Bob']]);
+            })
+            ->after(function() {
+                expect(DB::table('examples')->find(1)->name)->toEqual('Foo');
+            });
+
+        Event::dispatch(new MigrationStarted(app(CreateExampleTable::class), 'up'));
+        app(CreateExampleTable::class)->up();
+        Event::dispatch(new MigrationEnded(app(CreateExampleTable::class), 'up'));
+    }
 
     /** @test */
     public function it_can_run_an_inspection_prior_to_running_the_morph()

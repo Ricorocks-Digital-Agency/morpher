@@ -6,13 +6,20 @@ namespace RicorocksDigitalAgency\Morpher;
 
 class Inspection
 {
+    public $beforeMigratingHooks;
     public $beforeHooks;
     public $afterHooks;
 
     public function __construct()
     {
+        $this->beforeMigratingHooks = collect();
         $this->beforeHooks = collect();
         $this->afterHooks = collect();
+    }
+
+    public function beforeMigrating(callable $closure)
+    {
+        return tap($this, fn() => $this->beforeMigratingHooks->push($closure));
     }
 
     public function before(callable $closure)
@@ -23,6 +30,11 @@ class Inspection
     public function after(callable $closure)
     {
         return tap($this, fn() => $this->afterHooks->push($closure));
+    }
+
+    public function runBeforeMigrating(Morph $morph)
+    {
+        $this->beforeMigratingHooks->each(fn($hook) => call_user_func($hook, $morph));
     }
 
     public function runBefore(Morph $morph)

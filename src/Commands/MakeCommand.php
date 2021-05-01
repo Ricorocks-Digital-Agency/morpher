@@ -22,7 +22,10 @@ class MakeCommand extends Command
 
         File::ensureDirectoryExists(database_path('morphs/'));
 
-        File::put(database_path('morphs/' . Str::finish($this->argument('class'), ".php")), $class);
+        $path = database_path('morphs/' . Str::finish($this->argument('class'), ".php"));
+        File::put($path, $class);
+
+        $this->info("Morph created at $path");
     }
 
 }
