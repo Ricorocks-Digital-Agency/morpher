@@ -13,6 +13,6 @@ class AnonymousMorph extends Morph
 
     public function run()
     {
-        throw new Exception("The morph did actually run!");
+        throw new Exception("This exception came from an anonymous migration morph");
     }
 }

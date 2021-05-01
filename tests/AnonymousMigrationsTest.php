@@ -13,6 +13,7 @@ class AnonymousMigrationsTest extends TestCase
     {
         // We expect an exception because the AnonymousMorph throws one. As such, we know it ran successfully.
         $this->expectException(Exception::class);
+        $this->expectExceptionMessage("This exception came from an anonymous migration morph");
 
         $this->loadMigrationsFrom(__DIR__ . '/examples/migrations/automated');
         $this->artisan('migrate', ['--database' => 'testbench'])->run();
