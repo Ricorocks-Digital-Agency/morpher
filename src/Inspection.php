@@ -17,14 +17,12 @@ class Inspection
 
     public function before(callable $closure)
     {
-        $this->beforeHooks->push($closure);
-        return $this;
+        return tap($this, fn() => $this->beforeHooks->push($closure));
     }
 
     public function after(callable $closure)
     {
-        $this->afterHooks->push($closure);
-        return $this;
+        return tap($this, fn() => $this->afterHooks->push($closure));
     }
 
     public function runBefore(Morph $morph)
