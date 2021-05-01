@@ -7,6 +7,7 @@ namespace RicorocksDigitalAgency\Morpher\Tests;
 use CreateExampleTable;
 use ExampleMorph;
 use Illuminate\Database\Events\MigrationEnded;
+use Illuminate\Database\Events\MigrationEvent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -30,9 +31,9 @@ class MorphInspectionTest extends TestCase
 
         Event::dispatch(new MigrationEnded(app(CreateExampleTable::class), 'up'));
     }
-    
+
     /** @test */
-    public function it_can_run_an_inspection_after_running_the_morph() 
+    public function it_can_run_an_inspection_after_running_the_morph()
     {
         Morpher::test(ExampleMorph::class)->after(function() {
             expect(DB::table('examples')->find(1)->name)->toEqual('Foo');
@@ -82,6 +83,33 @@ class MorphInspectionTest extends TestCase
         DB::table('examples')->insert([['name' => 'Bob'], ['name' => 'Barry']]);
 
         Event::dispatch(new MigrationEnded(app(CreateExampleTable::class), 'up'));
+    }
+
+    /** @test */
+    public function multiple_inspections_can_be_declared_on_the_same_inspection()
+    {
+        $counter = 0;
+
+        Morpher::test(ExampleMorph::class)
+            ->before(function() use(&$counter) {
+                $counter += 1;
+            })
+            ->before(function() use(&$counter) {
+                $counter += 1;
+            })
+            ->after(function() use(&$counter) {
+                $counter += 1;
+            })
+            ->after(function() use(&$counter) {
+                $counter += 1;
+            });
+
+        app(CreateExampleTable::class)->up();
+        DB::table('examples')->insert([['name' => 'Bob'], ['name' => 'Barry']]);
+
+        Event::dispatch(new MigrationEnded(app(CreateExampleTable::class), 'up'));
+
+        expect($counter)->toEqual(4);
     }
 
 }
