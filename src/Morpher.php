@@ -7,6 +7,9 @@ use Illuminate\Database\Events\MigrationStarted;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
+use ReflectionClass;
+use SplFileInfo;
 
 class Morpher
 {
@@ -40,7 +43,7 @@ class Morpher
     protected function getMorphs($migration)
     {
         return $this->morphs[get_class($migration)] ??= $this->allMorphs()
-            ->filter(fn($morph) => $morph::migration() == get_class($migration))
+            ->filter(fn($morph) => Str::of(get_class($migration))->contains($morph::migration()))
             ->map(fn($morph) => app()->make($morph));
     }
 
@@ -62,7 +65,7 @@ class Morpher
     {
         collect(config('morpher.paths', []))
             ->flatMap(fn($directory) => File::allFiles($directory))
-            ->each(fn(\SplFileInfo $fileInfo) => include_once $fileInfo->getRealPath());
+            ->each(fn(SplFileInfo $fileInfo) => include_once $fileInfo->getRealPath());
     }
 
     protected function runMorphs($event)
