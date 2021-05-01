@@ -1,6 +1,10 @@
 # Morpher
 
-Morpher is a small Laravel package that provides a unified pattern of transforming data between database migrations.
+**We've all been there.** You have an application in production, and now one of the database tables
+needs a structural change. You can't manually go in and change all the affected database rows. So what do you do?
+Put the logic in a migration? Seems a little risky, no? 
+
+Morpher is a Laravel package that provides a unified pattern of transforming data between database migrations.
 It allows you to keep your migration logic clean and terse and move responsibility for data manipulation to a more
 appropriate location.
 
