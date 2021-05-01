@@ -34,7 +34,7 @@
                 "RicorocksDigitalAgency\\Morpher\\Providers\\MorpherServiceProvider"
             ],
             "aliases": {
-                "Morph": "RicorocksDigitalAgency\\Morpher\\Facades\\Morph"
+                "Morpher": "RicorocksDigitalAgency\\Morpher\\Facades\\Morpher"
             }
         }
     }

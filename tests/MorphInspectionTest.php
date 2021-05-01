@@ -10,7 +10,7 @@ use Illuminate\Database\Events\MigrationEnded;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use RicorocksDigitalAgency\Morpher\Facades\Morph;
+use RicorocksDigitalAgency\Morpher\Facades\Morpher;
 
 class MorphInspectionTest extends TestCase
 {
@@ -19,7 +19,7 @@ class MorphInspectionTest extends TestCase
     /** @test */
     public function it_can_run_an_inspection_prior_to_running_the_morph()
     {
-        Morph::test(ExampleMorph::class)->before(function() {
+        Morpher::test(ExampleMorph::class)->before(function() {
             expect(DB::table('examples')->find(1)->name)->toEqual('Bob');
             expect(DB::table('examples')->find(2)->name)->toEqual('Barry');
         });
@@ -34,7 +34,7 @@ class MorphInspectionTest extends TestCase
     /** @test */
     public function it_can_run_an_inspection_after_running_the_morph() 
     {
-        Morph::test(ExampleMorph::class)->after(function() {
+        Morpher::test(ExampleMorph::class)->after(function() {
             expect(DB::table('examples')->find(1)->name)->toEqual('Foo');
             expect(DB::table('examples')->find(2)->name)->toEqual('Foo');
         });
@@ -51,11 +51,11 @@ class MorphInspectionTest extends TestCase
     {
         $this->expectException(\Exception::class);
 
-        Morph::test(ExampleMorph::class)->before(function() {
+        Morpher::test(ExampleMorph::class)->before(function() {
             throw new \Exception("This should throw");
         });
 
-        Morph::test(ExampleMorph::class)->before(function() {
+        Morpher::test(ExampleMorph::class)->before(function() {
             expect(DB::table('examples')->find(1)->name)->toEqual('Bob');
         });
 
@@ -70,11 +70,11 @@ class MorphInspectionTest extends TestCase
     {
         $this->expectException(\Exception::class);
 
-        Morph::test(ExampleMorph::class)->after(function() {
+        Morpher::test(ExampleMorph::class)->after(function() {
             throw new \Exception("This should throw");
         });
 
-        Morph::test(ExampleMorph::class)->after(function() {
+        Morpher::test(ExampleMorph::class)->after(function() {
             expect(DB::table('examples')->find(1)->name)->toEqual('Foo');
         });
 
