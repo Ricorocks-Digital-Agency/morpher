@@ -3,7 +3,8 @@
     "description": "A Laravel package for managing data changes during database migrations.",
     "type": "library",
     "require": {
-        "illuminate/support": "^8.29"
+        "php": "^7.4|^8.0",
+        "illuminate/support": "^8.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",

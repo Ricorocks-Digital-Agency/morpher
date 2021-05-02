@@ -47,7 +47,7 @@ class Morpher
         $this->getMorphs($event->migration)
             ->each(fn($morph) => $morph->withConsole($this->console))
             ->each(fn($morph) => $morph->prepare())
-            ->each(fn($morph) => $this->inspectionsForMorph($morph)->each?->runBeforeMigrating($morph));
+            ->each(fn($morph) => $this->inspectionsForMorph($morph)->each->runBeforeMigrating($morph));
     }
 
     protected function isBuildingDatabase($event)
@@ -95,9 +95,9 @@ class Morpher
                 ->each(
                     function ($morph) use ($event) {
                         $inspections = $this->inspectionsForMorph($morph);
-                        $inspections->each?->runBefore($morph);
+                        $inspections->each->runBefore($morph);
                         $morph->run($event);
-                        $inspections->each?->runAfter($morph);
+                        $inspections->each->runAfter($morph);
                     }
                 )
         );
