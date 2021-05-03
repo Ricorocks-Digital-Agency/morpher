@@ -1,4 +1,6 @@
-<img src="https://github.com/Ricorocks-Digital-Agency/morpher/blob/main/morpher-logo.png?raw=true" alt="Morpher" width="200" height="200" align="center"/>
+<p align="center">
+<img src="https://github.com/Ricorocks-Digital-Agency/morpher/blob/main/morpher-logo.png?raw=true" alt="Morpher" width="200" height="200"/>
+</p>
 
 [![Tests](https://github.com/Ricorocks-Digital-Agency/morpher/actions/workflows/tests.yml/badge.svg)](https://github.com/Ricorocks-Digital-Agency/morpher/actions/workflows/tests.yml)
 
