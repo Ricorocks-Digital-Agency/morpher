@@ -6,7 +6,8 @@ Put the logic in a migration? Seems a little risky, no?
 
 Morpher is a Laravel package that provides a unified pattern of transforming data between database migrations.
 It allows you to keep your migration logic clean and terse and move responsibility for data manipulation to a more
-appropriate location.
+appropriate location. It also provides a robust way to write tests for these transformations, which otherwise
+proves to be a real challenge.
 
 ## TOC
 - [Installation](#installation)
@@ -167,7 +168,7 @@ class UserMorphTest extends TestCase {
     
     public function test_it_translates_the_user_names_correctly() {
         Morpher::test(UserMorph::class)
-            ->beforeMigrating(function() {
+            ->beforeThisMigration(function($morph) {
                 /**
                  * We use the `beforeMigrating` hook to allow for "old"
                  * data creation. In our user names example, we'll
@@ -175,7 +176,7 @@ class UserMorphTest extends TestCase {
                  */
                  DB::table('users')->insert([['name' => 'Joe Bloggs'], ['name' => 'Luke Downing']]);
             })
-            ->before(function() {
+            ->before(function($morph) {
                 /**
                  * We use the `before` hook to perform any expectations 
                  * after the migration has run but before the Morph
@@ -183,7 +184,7 @@ class UserMorphTest extends TestCase {
                  */
                  $this->assertCount(2, User::all());
             })
-            ->after(function() {
+            ->after(function($morph) {
                 /**
                  * We use the `after` hook to perform any expectations 
                  * after the morph has finished running. For example,
@@ -201,6 +202,33 @@ class UserMorphTest extends TestCase {
 
 }
 ```
+
+As you can see, there are several inspections methods we can make use of to fully test our Morphs.
+Note that you only need to use the inspections relevant to your particular Morph.
+
+### `beforeThisMigration`
+
+This method is run prior to the migration connected to the `Morph` being run on the database.
+It is also run prior to the `prepare` method on your Morph being called.
+Seen as your tests won't have "old" data for your Morph to alter, you can use this method to 
+create fake data ready for your Morph to use.
+
+> Note that in most cases, your Laravel Factories will likely be outdated, so you may have to 
+> resort to manual methods such as the `DB` Facade. You could also create a versioned 
+> Factory that uses the old data structure.
+ 
+### `before`
+
+This method is executed prior to the `run` method being called on your Morph, but after the
+prepare method. You could use this as an opportunity to make sure your prepare method
+has collected the expected data and stored it on the Morph object, if your Morph
+needs to perform that step.
+
+### `after`
+
+This method is executed after the `run` method has been called on your Morph. You should
+use this to check that the data migration has run successfully and that your data has
+actually been transformed.
 
 ## Disabling Morphs
 

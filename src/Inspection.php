@@ -17,7 +17,7 @@ class Inspection
         $this->afterHooks = collect();
     }
 
-    public function beforeMigrating(callable $closure): self
+    public function beforeThisMigration(callable $closure): self
     {
         return tap($this, fn() => $this->beforeMigratingHooks->push($closure));
     }
@@ -32,7 +32,7 @@ class Inspection
         return tap($this, fn() => $this->afterHooks->push($closure));
     }
 
-    public function runBeforeMigrating(Morph $morph)
+    public function runBeforeThisMigration(Morph $morph)
     {
         $this->beforeMigratingHooks->each(fn($hook) => call_user_func($hook, $morph));
     }

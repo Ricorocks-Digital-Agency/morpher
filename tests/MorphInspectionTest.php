@@ -23,7 +23,7 @@ class MorphInspectionTest extends TestCase
     public function it_can_run_an_inspection_prior_to_running_the_migration()
     {
         Morpher::test(ExampleMorph::class)
-            ->beforeMigrating(function() {
+            ->beforeThisMigration(function() {
                 expect(Schema::hasTable('examples'))->toBeFalse();
             })
             ->before(function() {
