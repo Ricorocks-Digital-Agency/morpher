@@ -2,11 +2,12 @@
 
 namespace RicorocksDigitalAgency\Morpher;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Database\Events\MigrationEnded;
 use Illuminate\Database\Events\MigrationStarted;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\File;
+use RicorocksDigitalAgency\Morpher\Support\Console;
 use Illuminate\Support\Str;
 use SplFileInfo;
 
@@ -14,6 +15,18 @@ class Morpher
 {
     protected $allMorphs;
     protected $morphs = [];
+    protected $inspections = [];
+    protected Console $console;
+
+    public function __construct(Console $console)
+    {
+        $this->console = $console;
+    }
+
+    public function test(string $morph)
+    {
+        return tap(new Inspection(), fn($inspection) => $this->inspections[$morph][] = $inspection);
+    }
 
     public function setup()
     {
@@ -31,7 +44,10 @@ class Morpher
             return;
         }
 
-        $this->getMorphs($event->migration)->each(fn($morphs) => $morphs->prepare());
+        $this->getMorphs($event->migration)
+            ->each(fn($morph) => $morph->withConsole($this->console))
+            ->each(fn($morph) => $this->inspectionsForMorph($morph)->each->runBeforeThisMigration($morph))
+            ->each(fn($morph) => $morph->prepare());
     }
 
     protected function isBuildingDatabase($event)
@@ -75,8 +91,20 @@ class Morpher
 
         DB::transaction(
             fn() => $this->getMorphs($event->migration)
-                ->filter(fn($morphs) => $morphs->canRun())
-                ->each(fn($morphs) => $morphs->run($event))
+                ->filter(fn($morph) => $morph->canRun())
+                ->each(
+                    function ($morph) use ($event) {
+                        $inspections = $this->inspectionsForMorph($morph);
+                        $inspections->each->runBefore($morph);
+                        $morph->run($event);
+                        $inspections->each->runAfter($morph);
+                    }
+                )
         );
+    }
+
+    protected function inspectionsForMorph($morph)
+    {
+        return collect(data_get($this->inspections, get_class($morph)));
     }
 }

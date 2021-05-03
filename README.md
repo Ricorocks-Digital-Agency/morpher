@@ -1,8 +1,21 @@
 # Morpher
 
-Morpher is a small Laravel package that provides a unified pattern of transforming data between database migrations.
+**We've all been there.** You have an application in production, and now one of the database tables
+needs a structural change. You can't manually go in and change all the affected database rows. So what do you do?
+Put the logic in a migration? Seems a little risky, no? 
+
+Morpher is a Laravel package that provides a unified pattern of transforming data between database migrations.
 It allows you to keep your migration logic clean and terse and move responsibility for data manipulation to a more
-appropriate location.
+appropriate location. It also provides a robust way to write tests for these transformations, which otherwise
+proves to be a real challenge.
+
+## TOC
+- [Installation](#installation)
+- [Usage Guide](#create-your-first-morph)
+- [Lifecycle of a Morph](#lifecycle)
+- [Testing Morphs](#testing-morphs)
+- [Disabling Morphs](#disabling-morphs)
+- [Notes and Considerations](#notes-and-considerations)
 
 ## Installation
 
@@ -114,6 +127,109 @@ the following happens (in order):
 3. The `canRun` method will be called on the `Morph` class. Returning false in this method will stop the process here.
 4. The `run` method will be called on the `Morph` class. This is where you should perform your data transformations.
 
+## Testing Morphs
+
+One of the biggest challenges presented by data morphing is writing feature tests. It becomes very tricky to insert
+data to test on prior to the morph taking place. And yet, automated tests are so important when the code you're running
+will be modifying real data. Morpher makes the process of testing data a breeze so that you no longer have to compromise.
+
+To get started, we recommend creating a separate test case (or more than one test case) per Morph you'd like to write
+tests for. Add the `TestsMorphs` trait to that test class, and add the `supportMorphs` call to end of the `setUp` 
+method.
+
+```php
+use RicorocksDigitalAgency\Morpher\Support\TestsMorphs;
+
+class UserMorphTest extends TestCase {
+
+    use TestsMorphs;
+    
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->supportMorphs();
+    }
+
+}
+```
+
+> :warning: The `TestsMorphs` trait conflicts with other database traits, such as `RefreshDatabase` or `DatabaseTransactions`.
+> As such, ensure that your morph test cases are isolated (in separate test classes) from other tests in your suite.
+
+With that done, you can get to work writing your tests! In order to do this, we provide a robust inspection API to 
+facilitate Morph tests.
+
+```php
+use RicorocksDigitalAgency\Morpher\Facades\Morpher;
+
+class UserMorphTest extends TestCase {
+
+    // ...After setup
+    
+    public function test_it_translates_the_user_names_correctly() {
+        Morpher::test(UserMorph::class)
+            ->beforeThisMigration(function($morph) {
+                /**
+                 * We use the `beforeMigrating` hook to allow for "old"
+                 * data creation. In our user names example, we'll
+                 * create users with combined forename and surname.  
+                 */
+                 DB::table('users')->insert([['name' => 'Joe Bloggs'], ['name' => 'Luke Downing']]);
+            })
+            ->before(function($morph) {
+                /**
+                 * We use the `before` hook to perform any expectations 
+                 * after the migration has run but before the Morph
+                 * has been executed.
+                 */
+                 $this->assertCount(2, User::all());
+            })
+            ->after(function($morph) {
+                /**
+                 * We use the `after` hook to perform any expectations 
+                 * after the morph has finished running. For example,
+                 * we would expect data to have been transformed. 
+                 */
+                 [$joe, $luke] = User::all();
+                 
+                 $this->assertEquals("Joe", $joe->forename);
+                 $this->assertEquals("Bloggs", $joe->surname);
+                 
+                 $this->assertEquals("Luke", $luke->forename);
+                 $this->assertEquals("Downing", $luke->surname);
+            });
+    }
+
+}
+```
+
+As you can see, there are several inspections methods we can make use of to fully test our Morphs.
+Note that you only need to use the inspections relevant to your particular Morph.
+
+### `beforeThisMigration`
+
+This method is run prior to the migration connected to the `Morph` being run on the database.
+It is also run prior to the `prepare` method on your Morph being called.
+Seen as your tests won't have "old" data for your Morph to alter, you can use this method to 
+create fake data ready for your Morph to use.
+
+> Note that in most cases, your Laravel Factories will likely be outdated, so you may have to 
+> resort to manual methods such as the `DB` Facade. You could also create a versioned 
+> Factory that uses the old data structure.
+ 
+### `before`
+
+This method is executed prior to the `run` method being called on your Morph, but after the
+prepare method. You could use this as an opportunity to make sure your prepare method
+has collected the expected data and stored it on the Morph object, if your Morph
+needs to perform that step.
+
+### `after`
+
+This method is executed after the `run` method has been called on your Morph. You should
+use this to check that the data migration has run successfully and that your data has
+actually been transformed.
+
 ## Disabling Morphs
 
 It may be helpful, particularly in local development where you destroy and rebuild the database regularly, to disable
@@ -127,7 +243,9 @@ RUN_MORPHS=false
 
 * Everything in the `run` method is encapsulated in a database transaction. This means that if there is an exception 
   whilst running your morph, no data changes will be persisted.
-* Its important to remember that this package isn't magic. If you do something stupid to the data in your database, there
+* It's important to remember that this package isn't magic. If you do something stupid to the data in your database, there
   is no going back. **Back up your data before migrating.**
 * You can override the `canRun` method to stop a faulty data set ruining your database. Perform any checks you want in this
   method, and just return a boolean to tell us if we should go ahead.
+* Want to write your progress to the console during a Morph? You can do so using the `$this->console` property on
+  the Morph class!

@@ -2,9 +2,17 @@
 
 namespace RicorocksDigitalAgency\Morpher;
 
+use RicorocksDigitalAgency\Morpher\Support\Console;
+
 abstract class Morph
 {
     protected static $migration;
+    protected Console $console;
+
+    public function withConsole(Console $console)
+    {
+        $this->console = $console;
+    }
 
     public function prepare()
     {
