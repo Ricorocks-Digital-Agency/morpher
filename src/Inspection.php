@@ -17,17 +17,17 @@ class Inspection
         $this->afterHooks = collect();
     }
 
-    public function beforeMigrating(callable $closure)
+    public function beforeMigrating(callable $closure): self
     {
         return tap($this, fn() => $this->beforeMigratingHooks->push($closure));
     }
 
-    public function before(callable $closure)
+    public function before(callable $closure): self
     {
         return tap($this, fn() => $this->beforeHooks->push($closure));
     }
 
-    public function after(callable $closure)
+    public function after(callable $closure): self
     {
         return tap($this, fn() => $this->afterHooks->push($closure));
     }
