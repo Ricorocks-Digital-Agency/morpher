@@ -1,23 +1,19 @@
 <?php
 
-
 namespace RicorocksDigitalAgency\Morpher\Support;
 
-
-use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Foundation\Testing\RefreshDatabaseState;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 trait TestsMorphs
 {
-    public function supportMorphs()
+    use RefreshDatabase;
+
+    public function refreshDatabase()
     {
-        $this->beforeApplicationDestroyed(function () {
-            $this->artisan('migrate:fresh');
-            $this->app[Kernel::class]->setArtisan(null);
-
-            $this->artisan('migrate:rollback');
-
-            RefreshDatabaseState::$migrated = false;
+        $this->beforeApplicationDestroyed(function() {
+            $this->usingInMemoryDatabase()
+                ? $this->refreshInMemoryDatabase()
+                : $this->refreshTestDatabase();
         });
     }
 }

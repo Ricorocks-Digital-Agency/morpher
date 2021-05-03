@@ -2,7 +2,7 @@
 
 **We've all been there.** You have an application in production, and now one of the database tables
 needs a structural change. You can't manually go in and change all the affected database rows. So what do you do?
-Put the logic in a migration? Seems a little risky, no? 
+Put the logic in a migration? Seems a little risky, no?
 
 Morpher is a Laravel package that provides a unified pattern of transforming data between database migrations.
 It allows you to keep your migration logic clean and terse and move responsibility for data manipulation to a more
@@ -87,19 +87,19 @@ class SplitUserNames extends Morph
 {
     protected static $migration = SplitNamesOnUsersTable::class;
     protected $newNames;
-    
+
     public function prepare()
     {
         // Get all of the names along with their ID
         $names = DB::table('users')->select(['id', 'name'])->get();
-        
+
         // Set a class property with the mapped version of the names
         $this->newNames = $names->map(function($data) {
             $nameParts = $this->splitName($data->name);
             return ['id' => $data->id, 'first_name' => $nameParts[0], 'last_name' => $nameParts[1]];
         });
     }
-    
+
     protected function splitName($name)
     {
         // ...return some splitting logic here
@@ -134,21 +134,15 @@ data to test on prior to the morph taking place. And yet, automated tests are so
 will be modifying real data. Morpher makes the process of testing data a breeze so that you no longer have to compromise.
 
 To get started, we recommend creating a separate test case (or more than one test case) per Morph you'd like to write
-tests for. Add the `TestsMorphs` trait to that test class, and add the `supportMorphs` call to end of the `setUp` 
-method.
+tests for. Simply add the `TestsMorphs` trait to that test class.
 
 ```php
 use RicorocksDigitalAgency\Morpher\Support\TestsMorphs;
 
-class UserMorphTest extends TestCase {
+class UserMorphTest extends TestCase
+{
 
     use TestsMorphs;
-    
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->supportMorphs();
-    }
 
 }
 ```
@@ -156,29 +150,28 @@ class UserMorphTest extends TestCase {
 > :warning: The `TestsMorphs` trait conflicts with other database traits, such as `RefreshDatabase` or `DatabaseTransactions`.
 > As such, ensure that your morph test cases are isolated (in separate test classes) from other tests in your suite.
 
-With that done, you can get to work writing your tests! In order to do this, we provide a robust inspection API to 
+With that done, you can get to work writing your tests! In order to do this, we provide a robust inspection API to
 facilitate Morph tests.
 
 ```php
 use RicorocksDigitalAgency\Morpher\Facades\Morpher;
 
-class UserMorphTest extends TestCase {
+class UserMorphTest extends TestCase
+{
 
-    // ...After setup
-    
     public function test_it_translates_the_user_names_correctly() {
         Morpher::test(UserMorph::class)
             ->beforeThisMigration(function($morph) {
                 /**
-                 * We use the `beforeMigrating` hook to allow for "old"
+                 * We use the `beforeThisMigration` hook to allow for "old"
                  * data creation. In our user names example, we'll
-                 * create users with combined forename and surname.  
+                 * create users with combined forename and surname.
                  */
                  DB::table('users')->insert([['name' => 'Joe Bloggs'], ['name' => 'Luke Downing']]);
             })
             ->before(function($morph) {
                 /**
-                 * We use the `before` hook to perform any expectations 
+                 * We use the `before` hook to perform any expectations
                  * after the migration has run but before the Morph
                  * has been executed.
                  */
@@ -186,15 +179,15 @@ class UserMorphTest extends TestCase {
             })
             ->after(function($morph) {
                 /**
-                 * We use the `after` hook to perform any expectations 
+                 * We use the `after` hook to perform any expectations
                  * after the morph has finished running. For example,
-                 * we would expect data to have been transformed. 
+                 * we would expect data to have been transformed.
                  */
                  [$joe, $luke] = User::all();
-                 
+
                  $this->assertEquals("Joe", $joe->forename);
                  $this->assertEquals("Bloggs", $joe->surname);
-                 
+
                  $this->assertEquals("Luke", $luke->forename);
                  $this->assertEquals("Downing", $luke->surname);
             });
@@ -210,13 +203,13 @@ Note that you only need to use the inspections relevant to your particular Morph
 
 This method is run prior to the migration connected to the `Morph` being run on the database.
 It is also run prior to the `prepare` method on your Morph being called.
-Seen as your tests won't have "old" data for your Morph to alter, you can use this method to 
+Seen as your tests won't have "old" data for your Morph to alter, you can use this method to
 create fake data ready for your Morph to use.
 
-> Note that in most cases, your Laravel Factories will likely be outdated, so you may have to 
-> resort to manual methods such as the `DB` Facade. You could also create a versioned 
+> Note that in most cases, your Laravel Factories will likely be outdated, so you may have to
+> resort to manual methods such as the `DB` Facade. You could also create a versioned
 > Factory that uses the old data structure.
- 
+
 ### `before`
 
 This method is executed prior to the `run` method being called on your Morph, but after the
@@ -241,7 +234,7 @@ RUN_MORPHS=false
 
 ## Notes and Considerations
 
-* Everything in the `run` method is encapsulated in a database transaction. This means that if there is an exception 
+* Everything in the `run` method is encapsulated in a database transaction. This means that if there is an exception
   whilst running your morph, no data changes will be persisted.
 * It's important to remember that this package isn't magic. If you do something stupid to the data in your database, there
   is no going back. **Back up your data before migrating.**
