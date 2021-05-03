@@ -1,5 +1,7 @@
 # Morpher
 
+[![Tests](https://github.com/Ricorocks-Digital-Agency/morpher/actions/workflows/tests.yml/badge.svg)](https://github.com/Ricorocks-Digital-Agency/morpher/actions/workflows/tests.yml)
+
 **We've all been there.** You have an application in production, and now one of the database tables
 needs a structural change. You can't manually go in and change all the affected database rows. So what do you do?
 Put the logic in a migration? Seems a little risky, no? 
