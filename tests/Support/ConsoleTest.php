@@ -53,22 +53,22 @@ class RunsCallbackOnWriteLn implements OutputInterface
 
     public function setVerbosity(int $level) { }
 
-    public function getVerbosity() { }
+    public function getVerbosity(): int { }
 
-    public function isQuiet() { }
+    public function isQuiet(): bool { }
 
-    public function isVerbose() { }
+    public function isVerbose(): bool { }
 
-    public function isVeryVerbose() { }
+    public function isVeryVerbose(): bool { }
 
-    public function isDebug() { }
+    public function isDebug(): bool { }
 
     public function setDecorated(bool $decorated) { }
 
-    public function isDecorated() { }
+    public function isDecorated(): bool { }
 
     public function setFormatter(OutputFormatterInterface $formatter) { }
 
-    public function getFormatter() { }
+    public function getFormatter(): OutputFormatterInterface { }
 
 }
